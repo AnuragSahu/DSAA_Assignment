@@ -9,7 +9,7 @@ qm = [16	11	10	16 	24 	40 	51 	61;
       18	22	37	56 	68 	109	103	77;
       24	35	55	64 	81 	104	113	92;
       49	64	78	87 	103	121	120	101;
-      72	92	95	98	112	100	103	99]
+      72	92	95	98	112	100	103	99];
   
 %% Question 1.1 
 
@@ -59,11 +59,63 @@ disp("entropy from my function : "),disp(en);
 disp("entropy from inbuild function : "),disp(entropy(im1));
 
 %% Question 1.2
+lake_image = im2double(imread("LAKE.TIF"));
+lake_image_1 = lake_image(420:420+7, 45:45+7);
+lake_image_2 = lake_image(427:427+7, 298:298+7);
+lake_image_3 = lake_image(30:30+7, 230:230+7);
+
+im_dct_1 = myDCT(lake_image_1,F);
+im_dct_2 = myDCT(lake_image_2,F);
+im_dct_3 = myDCT(lake_image_3,F);
+
+figure,imshow(im_dct_1), title("lake_img_1 DCT");
+figure,imshow(im_dct_2), title("lake_img_2 DCT");
+figure,imshow(im_dct_3 ), title("lake_img_3 DCT");
+
+c = 2;
+
+figure,imshow(myDCT_quantization(im_dct_1,qm,c)), title("lake_img_1 DCT_qua");
+figure,imshow(myDCT_quantization(im_dct_2,qm,c)), title("lake_img_2 DCT_qua");
+figure,imshow(myDCT_quantization(im_dct_3,qm,c)), title("lake_img_3 DCT_qua");
+
+figure,imshow(myDCT_dequantization(im_dct_1,qm,c)), title("lake_img_1 DCT_qua");
+figure,imshow(myDCT_dequantization(im_dct_2,qm,c)), title("lake_img_2 DCT_qua");
+figure,imshow(myDCT_dequantization(im_dct_3,qm,c)), title("lake_img_3 DCT_qua");
 
 
+%% Question 1.3
 
+c = 1;  %% Change this for changing the Value of C in Q4
+
+DCT_quant = DCT_whole_quant(lake_image,F,qm,c);
+figure,imshow(DCT_quant),title("Transformed Image");
+
+%% Question 1.4
+DCT_dequant = DCT_whole_dequant(lake_image,F,qm,c);
+figure,imshow(DCT_dequant),title("Retransformed Image");
 
 %% All the functions 
+
+function DCT_quant = DCT_whole_quant(im,F,qm,c)
+    [im_len, im_bre] = size(im);
+    DCT_quant = zeros(im_len,im_bre);
+    for len = 1:8:im_len
+        for bre = 1:8:im_bre
+            DCT_quant (len:len+7,bre:bre+7) = myDCT_quantization(myDCT(im(len:len+7,bre:bre+7),F),qm,c);
+        end
+    end
+end
+
+
+function DCT_quant = DCT_whole_dequant(im,F,qm,c)
+    [im_len, im_bre] = size(im);
+    DCT_quant = zeros(im_len,im_bre);
+    for len = 1:8:im_len
+        for bre = 1:8:im_bre
+            DCT_quant (len:len+7,bre:bre+7) = myDCT_dequantization(myDCT(im(len:len+7,bre:bre+7),F),qm,c);
+        end
+    end
+end
 
 function en = entrpy(im1)
     [im_len, im_bre] = size(im1);
