@@ -14,36 +14,36 @@ qm = [16	11	10	16 	24 	40 	51 	61;
 %% Question 1.1 
 
 % part(a)
-F = create_mat_dct(N);
+F = create_mat_dct(N)
 disp("create_mat_dct OP : ");
 disp(F);
 disp("dctmtx() OP :");
-disp(dctmtx(N))
+disp(dctmtx(N));
 
+
+plots = 3;
 % part(b)
 im = create_image(N,N);
 disp("random Image : "),disp(im)
-figure,imshow(im),title("Random Image");
 disp("Transform : ");
 transform = myDCT(im,F);
 disp(transform);
-figure,imshow(transform),title("DCT Transform");
+
 
 % part(c)
 inverse_transpose = myIDCT(transform,F);
-figure,imshow(inverse_transpose),title("IDCT Transform");
 disp(inverse_transpose);
 
+plots = 3;
 % part(d)
-c = 3;
+c = 1;
 imqDCT = myDCT_quantization(transform, qm, c);
-disp("imqDCT image"), disp(imqDCT)
-figure, imshow(imqDCT), title("Quantised Image");
+
 
 % part(e)
 imqIDCT = myDCT_dequantization(imqDCT, qm, c);
-disp("imqIDCT image"), disp(imqIDCT)
-figure, imshow(imqIDCT), title("de_Quantised Image");
+imqIDCT = myIDCT(imqIDCT,F);
+disp("imqIDCT image"), disp(imqIDCT);
 
 % part(f)
 im1 = create_image(5,8);
@@ -59,49 +59,54 @@ disp("entropy from my function : "),disp(en);
 disp("entropy from inbuild function : "),disp(entropy(im1));
 
 %% Question 1.2
-lake_image = im2double(imread("LAKE.TIF"));
+lake_image = double(imread("LAKE.TIF"));
 lake_image_1 = lake_image(420:420+7, 45:45+7);
 lake_image_2 = lake_image(427:427+7, 298:298+7);
 lake_image_3 = lake_image(30:30+7, 230:230+7);
 
-im_dct_1 = myDCT(lake_image_1,F);
+im_dct_1 = myDCT(lake_image_1,F);disp(im_dct_1);
 im_dct_2 = myDCT(lake_image_2,F);
 im_dct_3 = myDCT(lake_image_3,F);
-
-figure,imshow(im_dct_1), title("lake_img_1 DCT");
-figure,imshow(im_dct_2), title("lake_img_2 DCT");
-figure,imshow(im_dct_3 ), title("lake_img_3 DCT");
-
+% Show image DCT
+% Show quantised DCT
+% Show reconstructed Image
 c = 2;
+im_dct1 = myDCT_quantization(im_dct_1,qm,c);disp(im_dct1);
+im_dct2 = myDCT_quantization(im_dct_2,qm,c);
+im_dct3 = myDCT_quantization(im_dct_3,qm,c);
 
-figure,imshow(myDCT_quantization(im_dct_1,qm,c)), title("lake_img_1 DCT_qua");
-figure,imshow(myDCT_quantization(im_dct_2,qm,c)), title("lake_img_2 DCT_qua");
-figure,imshow(myDCT_quantization(im_dct_3,qm,c)), title("lake_img_3 DCT_qua");
+figure;
+subplot(6,1,1),imshow(mat2gray(lake_image_1)), title("lake img 1");
+subplot(6,1,2),imshow(mat2gray(lake_image_2)), title("lake img 2");
+subplot(6,1,3),imshow(mat2gray(lake_image_3)), title("lake img 3");
 
-figure,imshow(myDCT_dequantization(im_dct_1,qm,c)), title("lake_img_1 DCT_qua");
-figure,imshow(myDCT_dequantization(im_dct_2,qm,c)), title("lake_img_2 DCT_qua");
-figure,imshow(myDCT_dequantization(im_dct_3,qm,c)), title("lake_img_3 DCT_qua");
+subplot(6,1,4),imshow(mat2gray(myIDCT(myDCT_dequantization(im_dct1,qm,c),F))), title("lake img 1 DCT qua");
+subplot(6,1,5),imshow(mat2gray(myIDCT(myDCT_dequantization(im_dct2,qm,c),F))), title("lake img 2 DCT qua");
+subplot(6,1,6),imshow(mat2gray(myIDCT(myDCT_dequantization(im_dct3,qm,c),F))), title("lake img 3 DCT qua");
 
 
 %% Question 1.3
 
-c = 1;  %% Change this for changing the Value of C in Q4
+c = 10;  %% Change this for changing the Value of C in Q4
 
-DCT_quant = DCT_whole_quant(lake_image,F,qm,c);
-figure,imshow(DCT_quant),title("Transformed Image");
+[DCT_quant,DCT_my] = DCT_whole_quant(lake_image,F,qm,c);
+figure;subplot(2,1,1),imshow(mat2gray(DCT_quant)),title("DCT Transformed Image");
+subplot(2,1,2),imshow(mat2gray(DCT_my)),title("Quantised DCT Transformed Image");
 
 %% Question 1.4
 DCT_dequant = DCT_whole_dequant(lake_image,F,qm,c);
-figure,imshow(DCT_dequant),title("Retransformed Image");
-
+figure,subplot(1,2,2),imshow(mat2gray(DCT_dequant)),title(sprintf("Constructed Image C = %d",c));
+subplot(1,2,1),imshow(mat2gray(lake_image)),title("Original Image");
 %% All the functions 
 
-function DCT_quant = DCT_whole_quant(im,F,qm,c)
+function [DCT_quant,DCT_my] = DCT_whole_quant(im,F,qm,c)
     [im_len, im_bre] = size(im);
     DCT_quant = zeros(im_len,im_bre);
+    DCT_my = zeros(im_len,im_bre);
     for len = 1:8:im_len
         for bre = 1:8:im_bre
-            DCT_quant (len:len+7,bre:bre+7) = myDCT_quantization(myDCT(im(len:len+7,bre:bre+7),F),qm,c);
+            DCT_quant (len:len+7,bre:bre+7) = myDCT(im(len:len+7,bre:bre+7),F);
+            DCT_my (len:len+7,bre:bre+7) = myDCT_quantization(myDCT(im(len:len+7,bre:bre+7),F),qm,c);
         end
     end
 end
@@ -112,7 +117,7 @@ function DCT_quant = DCT_whole_dequant(im,F,qm,c)
     DCT_quant = zeros(im_len,im_bre);
     for len = 1:8:im_len
         for bre = 1:8:im_bre
-            DCT_quant (len:len+7,bre:bre+7) = myDCT_dequantization(myDCT(im(len:len+7,bre:bre+7),F),qm,c);
+            DCT_quant (len:len+7,bre:bre+7) = myIDCT(myDCT_dequantization(myDCT(im(len:len+7,bre:bre+7),F),qm,c),F);
         end
     end
 end
@@ -160,17 +165,18 @@ end
 
 
 function imqIDCT = myDCT_dequantization(imqDCT,qm,c)
-    imqIDCT = imqDCT.*(c*qm);
+    imqIDCT = round(imqDCT.*(c*qm));
 end
 
 
 function imqDCT = myDCT_quantization(imDCT,qm,c)
-    imqDCT = imDCT./(c*qm);
+    imqDCT = round(imDCT.*(1./(c*qm)));
 end
 
 function inverse = myIDCT(im,F)
-    inverse = transpose(F)*im*F;
+    inverse = round(transpose(F)*im*F);
 end
+
 
 function im = create_image(N,M)
     im = rand(N,M);
